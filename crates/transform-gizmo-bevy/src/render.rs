@@ -86,7 +86,7 @@ fn extract_gizmo_data(mut commands: Commands, handles: Extract<Res<DrawDataHandl
         .collect::<HashSet<_>>();
 
     for handle in handle_weak_refs {
-        commands.spawn((handle,));
+        commands.spawn_empty().insert( GizmoDrawDataHandle( handle ) ) ;
     }
 }
 
@@ -185,11 +185,11 @@ impl<P: PhaseItem> RenderCommand<P> for DrawTransformGizmo {
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
         let Some(handle) = handle else {
-            return RenderCommandResult::Failure;
+            return RenderCommandResult::Failure( "no gizmo handle" );
         };
 
         let Some(gizmo) = gizmos.into_inner().get(handle) else {
-            return RenderCommandResult::Failure;
+            return RenderCommandResult::Failure( "no gizmo handle inner" );
         };
 
         pass.set_index_buffer(gizmo.index_buffer.slice(..), 0, IndexFormat::Uint32);
@@ -247,6 +247,7 @@ impl SpecializedRenderPipeline for TransformGizmoPipeline {
 
         RenderPipelineDescriptor {
             label: Some("TransformGizmo Pipeline".into()),
+            zero_initialize_workgroup_memory: true , // ??  
             vertex: VertexState {
                 shader: GIZMO_SHADER_HANDLE,
                 entry_point: "vertex".into(),
