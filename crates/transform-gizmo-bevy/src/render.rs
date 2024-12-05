@@ -1,3 +1,5 @@
+use bevy_render::extract_component::ExtractComponent;
+use bevy::prelude::*;
 use bevy::image::BevyDefault;
 use bevy_app::{App, Plugin};
 use bevy_asset::{load_internal_asset, Asset, Handle};
@@ -5,14 +7,12 @@ use bevy_core_pipeline::core_3d::{Transparent3d, CORE_3D_DEPTH_FORMAT};
 use bevy_core_pipeline::prepass::{
     DeferredPrepass, DepthPrepass, MotionVectorPrepass, NormalPrepass,
 };
-use bevy_ecs::prelude::*;
 use bevy_ecs::query::ROQueryItem;
 use bevy_ecs::system::lifetimeless::{Read, SRes};
 use bevy_ecs::system::SystemParamItem;
 use bevy_pbr::{MeshPipeline, MeshPipelineKey, SetMeshViewBindGroup};
 use bevy_reflect::TypePath;
 use bevy_render::mesh::PrimitiveTopology;
-use bevy_render::prelude::*;
 use bevy_render::render_asset::{
     prepare_assets, PrepareAssetError, RenderAsset, RenderAssetPlugin, RenderAssetUsages,
     RenderAssets,
@@ -75,7 +75,7 @@ impl Plugin for TransformGizmoRenderPlugin {
 
 #[derive(Resource, Default)]
 pub(crate) struct DrawDataHandles {
-    pub(crate) handles: HashMap<Uuid, Handle<GizmoDrawData>>,
+    pub(crate) handles: HashMap<Uuid,  GizmoDrawDataHandle >,
 }
 
 fn extract_gizmo_data(mut commands: Commands, handles: Extract<Res<DrawDataHandles>>) {
@@ -89,6 +89,32 @@ fn extract_gizmo_data(mut commands: Commands, handles: Extract<Res<DrawDataHandl
         commands.spawn((handle,));
     }
 }
+
+#[derive(Component, Default , Clone, Debug, Deref, DerefMut, Reflect, PartialEq, Eq, ExtractComponent)]
+#[reflect(Component, Default)]
+pub struct GizmoDrawDataHandle (pub Handle<GizmoDrawData>);
+ 
+
+
+impl From<Handle<GizmoDrawData>> for  GizmoDrawDataHandle  {
+    fn from(handle: Handle<GizmoDrawData>) -> Self {
+        Self(handle)
+    }
+}
+
+
+impl From<GizmoDrawDataHandle> for AssetId<GizmoDrawData> {
+    fn from(handle:  GizmoDrawDataHandle ) -> Self {
+        handle.id()
+    }
+}
+impl From<&GizmoDrawDataHandle> for AssetId<GizmoDrawData> {
+    fn from(handle: &GizmoDrawDataHandle ) -> Self {
+        handle.id()
+    }
+}
+
+
 
 #[derive(Asset, Debug, Default, Clone, TypePath)]
 pub(crate) struct GizmoDrawData(pub(crate) transform_gizmo::GizmoDrawData);
@@ -147,7 +173,7 @@ struct DrawTransformGizmo;
 
 impl<P: PhaseItem> RenderCommand<P> for DrawTransformGizmo {
     type ViewQuery = ();
-    type ItemQuery = Read<Handle<GizmoDrawData>>;
+    type ItemQuery = Read<GizmoDrawDataHandle>;
     type Param = SRes<RenderAssets<GizmoBuffers>>;
 
     #[inline]
@@ -288,7 +314,7 @@ fn queue_transform_gizmos(
     mut pipelines: ResMut<SpecializedRenderPipelines<TransformGizmoPipeline>>,
     pipeline_cache: Res<PipelineCache>,
     msaa: Res<Msaa>,
-    transform_gizmos: Query<(Entity, &Handle<GizmoDrawData>)>,
+    transform_gizmos: Query<(Entity, & GizmoDrawDataHandle)>,
     transform_gizmo_assets: Res<RenderAssets<GizmoBuffers>>,
     mut views: Query<(
         Entity,
