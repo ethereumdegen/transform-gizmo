@@ -30,6 +30,7 @@ use bevy_render::render_resource::{
 };
 use bevy_render::renderer::RenderDevice;
  
+ 
 use bevy_render::view::{ExtractedView, RenderLayers, ViewTarget};
 use bevy_render::{Extract, Render, RenderApp, RenderSet};
 use bevy_utils::{HashMap, HashSet};
@@ -92,7 +93,7 @@ fn extract_gizmo_data(mut commands: Commands, handles: Extract<Res<DrawDataHandl
 
 #[derive(Component, Default , Clone, Debug, Deref, DerefMut, Reflect, PartialEq, Eq, ExtractComponent)]
 #[reflect(Component, Default)]
-pub struct GizmoDrawDataHandle (pub Handle<GizmoDrawData>);
+pub(crate) struct GizmoDrawDataHandle ( pub(crate)   Handle<GizmoDrawData> );
  
 
 
@@ -314,7 +315,7 @@ fn queue_transform_gizmos(
     pipeline: Res<TransformGizmoPipeline>,
     mut pipelines: ResMut<SpecializedRenderPipelines<TransformGizmoPipeline>>,
     pipeline_cache: Res<PipelineCache>,
-    msaa: Res<Msaa>,
+    //msaa: Res<Msaa>,
     transform_gizmos: Query<(Entity, & GizmoDrawDataHandle)>,
     transform_gizmo_assets: Res<RenderAssets<GizmoBuffers>>,
     mut views: Query<(
@@ -343,8 +344,14 @@ fn queue_transform_gizmos(
             continue;
         };
 
-        let mut view_key = MeshPipelineKey::from_msaa_samples(msaa.samples())
-            | MeshPipelineKey::from_hdr(view.hdr);
+
+        let msaa_sample_count = 4; // fix me 
+       /* let mut view_key = MeshPipelineKey::from_msaa_samples(msaa.samples())
+            | MeshPipelineKey::from_hdr(view.hdr);*/
+
+            // ??? 
+         let mut view_key = MeshPipelineKey::from_msaa_samples( msaa_sample_count ) 
+          |   MeshPipelineKey::from_hdr(view.hdr);
 
         if normal_prepass {
             view_key |= MeshPipelineKey::NORMAL_PREPASS;
@@ -377,7 +384,7 @@ fn queue_transform_gizmos(
             );
 
             transparent_phase.add(Transparent3d {
-                entity,
+                entity: (entity,   view_entity.into() ),  // ???  MainEntity -> ??? 
                 draw_function,
                 pipeline,
                 distance: 0.,
