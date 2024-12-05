@@ -2,7 +2,7 @@
 name = "transform-gizmo-bevy"
 description = "bevy integration for transform-gizmo"
 version.workspace = true
-rust-version = "1.79.0"
+rust-version = "1.82.0"
 edition.workspace = true
 license.workspace = true
 homepage.workspace = true
@@ -22,6 +22,7 @@ include = [
 [dependencies]
 transform-gizmo.workspace = true
 
+bevy.workspace = true
 bevy_app.workspace = true
 bevy_core.workspace = true
 bevy_core_pipeline.workspace = true
@@ -40,7 +41,7 @@ bytemuck.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-bevy = "0.14"
+bevy = "0.15"
 
 [lints]
 workspace = true

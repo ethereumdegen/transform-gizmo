@@ -1,3 +1,4 @@
+use bevy::image::BevyDefault;
 use bevy_app::{App, Plugin};
 use bevy_asset::{load_internal_asset, Asset, Handle};
 use bevy_core_pipeline::core_3d::{Transparent3d, CORE_3D_DEPTH_FORMAT};
@@ -28,7 +29,7 @@ use bevy_render::render_resource::{
     VertexAttribute, VertexBufferLayout, VertexFormat, VertexState, VertexStepMode,
 };
 use bevy_render::renderer::RenderDevice;
-use bevy_render::texture::BevyDefault;
+ 
 use bevy_render::view::{ExtractedView, RenderLayers, ViewTarget};
 use bevy_render::{Extract, Render, RenderApp, RenderSet};
 use bevy_utils::{HashMap, HashSet};
