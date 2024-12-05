@@ -1,3 +1,4 @@
+use crate::GizmoCamera;
 use bevy_render::extract_component::ExtractComponent;
 use bevy::prelude::*;
 use bevy::image::BevyDefault;
@@ -316,11 +317,15 @@ fn queue_transform_gizmos(
     mut pipelines: ResMut<SpecializedRenderPipelines<TransformGizmoPipeline>>,
     pipeline_cache: Res<PipelineCache>,
     //msaa: Res<Msaa>,
+    
     transform_gizmos: Query<(Entity, & GizmoDrawDataHandle)>,
     transform_gizmo_assets: Res<RenderAssets<GizmoBuffers>>,
+
+   // msaa_query: Query<&Msaa, With<GizmoCamera>> ,  //merge this w views ?
     mut views: Query<(
         Entity,
         &ExtractedView,
+        Option<&Msaa>,  
         Option<&RenderLayers>,
         (
             Has<NormalPrepass>,
@@ -336,6 +341,7 @@ fn queue_transform_gizmos(
     for (
         view_entity,
         view,
+        msaa_comp,
         _render_layers,
         (normal_prepass, depth_prepass, motion_vector_prepass, deferred_prepass),
     ) in &mut views
@@ -343,13 +349,14 @@ fn queue_transform_gizmos(
         let Some(transparent_phase) = transparent_render_phases.get_mut(&view_entity) else {
             continue;
         };
+ 
 
+        let msaa_sample_count = match msaa_comp {
+            Some(msaa) => msaa.samples() ,
+            None =>  Msaa::default().samples() //default is 4 
+        };  
+ 
 
-        let msaa_sample_count = 4; // fix me 
-       /* let mut view_key = MeshPipelineKey::from_msaa_samples(msaa.samples())
-            | MeshPipelineKey::from_hdr(view.hdr);*/
-
-            // ??? 
          let mut view_key = MeshPipelineKey::from_msaa_samples( msaa_sample_count ) 
           |   MeshPipelineKey::from_hdr(view.hdr);
 
