@@ -28,7 +28,6 @@
 //!
 //! You can either set it up with [`App::insert_resource`] when creating your App, or at any point in a system with [`ResMut<GizmoOptions>`].
 
- 
 use bevy_app::prelude::*;
 use bevy_asset::{AssetApp, Assets};
 use bevy_ecs::prelude::*;
@@ -593,7 +592,9 @@ fn draw_gizmos(
         if is_new_asset {
             let asset = draw_data_assets.add(bevy_draw_data);
 
-            draw_data_handles.handles.insert(*gizmo_uuid, render::GizmoDrawDataHandle(asset.clone()));
+            draw_data_handles
+                .handles
+                .insert(*gizmo_uuid, asset.clone().into());
         }
     }
 }

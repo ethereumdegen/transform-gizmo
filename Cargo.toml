@@ -30,6 +30,8 @@ uuid = "1.1"
 bevy = "0.15"
 
 bevy_app = "0.15"
+bevy_image = "0.15"
+bevy_derive = "0.15"
 bevy_core = "0.15"
 bevy_core_pipeline = "0.15"
 bevy_reflect = "0.15"
