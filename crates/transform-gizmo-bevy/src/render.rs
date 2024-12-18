@@ -194,6 +194,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawTransformGizmo {
             return RenderCommandResult::Failure("No GizmoDrawDataHandle inner found");
         };
 
+        //THIS FIXES MY CRASHING BUG FOR SOME REASON - PLEASE INVESTIGATE 
        if gizmo.index_buffer.size() == 0 {
         return RenderCommandResult::Failure("gizmo.index_buffer empty");
        }

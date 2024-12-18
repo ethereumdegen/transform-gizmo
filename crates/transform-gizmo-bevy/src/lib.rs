@@ -364,7 +364,8 @@ fn handle_hotkeys(
 fn update_gizmos(
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_gizmo_camera: Query<(&Camera, &GlobalTransform), With<GizmoCamera>>,
-    mut q_targets: Query<(Entity, &mut Transform, &mut GizmoTarget), Without<GizmoCamera>>,
+     // mut q_targets: Query<(Entity, &mut Transform, &mut GizmoTarget), Without<GizmoCamera>>,
+     mut q_targets: Query<(Entity, &mut Transform, &mut GlobalTransform, &mut GizmoTarget), Without<GizmoCamera>>,
     mouse: Res<ButtonInput<MouseButton>>,
     gizmo_options: Res<GizmoOptions>,
     mut gizmo_storage: ResMut<GizmoStorage>,
@@ -459,12 +460,18 @@ fn update_gizmos(
         dragging: mouse.any_pressed([MouseButton::Left]),
     };
 
-    let mut target_entities: Vec<Entity> = vec![];
-    let mut target_transforms: Vec<Transform> = vec![];
+    let mut target_entities: Vec<Entity> = vec![]; 
+     let mut target_transforms: Vec<(Transform, Transform)> = vec![];
 
-    for (entity, mut target_transform, mut gizmo_target) in &mut q_targets {
+   
+
+    for (entity, mut target_transform, target_global_transform, mut gizmo_target) in &mut q_targets {
+        let target_global_transform = target_global_transform.compute_transform();
+
+
+
         target_entities.push(entity);
-        target_transforms.push(*target_transform);
+         target_transforms.push((*target_transform, target_global_transform));
 
         if gizmo_options.group_targets {
             gizmo_storage
@@ -490,8 +497,11 @@ fn update_gizmos(
         let gizmo_result = gizmo.update(
             gizmo_interaction,
             &[math::Transform {
-                translation: target_transform.translation.as_dvec3().into(),
-                rotation: target_transform.rotation.as_dquat().into(),
+                
+                 translation: target_global_transform.translation.as_dvec3().into(),
+                rotation: target_global_transform.rotation.as_dquat().into(),
+
+
                 scale: target_transform.scale.as_dvec3().into(),
             }],
         );
@@ -501,14 +511,18 @@ fn update_gizmos(
         gizmo_target.is_active = gizmo_result.is_some();
         gizmo_target.is_focused = is_focused;
 
-        if let Some((_, updated_targets)) = &gizmo_result {
+           if let Some((gizmo_result, updated_targets)) = &gizmo_result {
             let Some(result_transform) = updated_targets.first() else {
                 bevy_log::warn!("No transform found in GizmoResult!");
                 continue;
             };
 
-            target_transform.translation = DVec3::from(result_transform.translation).as_vec3();
-            target_transform.rotation = DQuat::from(result_transform.rotation).as_quat();
+            let to_local_rotation = target_transform.rotation * target_global_transform.rotation.inverse();
+            let rotation_delta = ( to_local_rotation * DQuat::from(result_transform.rotation).as_quat() ) * ( to_local_rotation * target_global_transform.rotation ).inverse();
+            target_transform.translation += to_local_rotation * ( DVec3::from(result_transform.translation).as_vec3() - target_global_transform.translation );
+            target_transform.rotation = rotation_delta * target_transform.rotation;
+
+
             target_transform.scale = DVec3::from(result_transform.scale).as_vec3();
         }
 
@@ -524,9 +538,9 @@ fn update_gizmos(
             target_transforms
                 .iter()
                 .map(|transform| transform_gizmo::math::Transform {
-                    translation: transform.translation.as_dvec3().into(),
-                    rotation: transform.rotation.as_dquat().into(),
-                    scale: transform.scale.as_dvec3().into(),
+                   translation: transform.1.translation.as_dvec3().into(),
+                    rotation: transform.1.rotation.as_dquat().into(),
+                    scale: transform.0.scale.as_dvec3().into(),
                 })
                 .collect::<Vec<_>>()
                 .as_slice(),
@@ -534,7 +548,9 @@ fn update_gizmos(
 
         let is_focused = gizmo.is_focused();
 
-        for (i, (_, mut target_transform, mut gizmo_target)) in q_targets.iter_mut().enumerate() {
+         for (i, (_, mut target_transform, target_global_transform, mut gizmo_target)) in q_targets.iter_mut().enumerate() {
+            let target_global_transform = target_global_transform.compute_transform();
+
             gizmo_target.is_active = gizmo_result.is_some();
             gizmo_target.is_focused = is_focused;
 
@@ -544,8 +560,11 @@ fn update_gizmos(
                     continue;
                 };
 
-                target_transform.translation = DVec3::from(result_transform.translation).as_vec3();
-                target_transform.rotation = DQuat::from(result_transform.rotation).as_quat();
+                let to_local_rotation = target_transform.rotation * target_global_transform.rotation.inverse();
+                let rotation_delta = ( to_local_rotation * DQuat::from(result_transform.rotation).as_quat() ) * ( to_local_rotation * target_global_transform.rotation ).inverse();
+                target_transform.translation += to_local_rotation * ( DVec3::from(result_transform.translation).as_vec3() - target_global_transform.translation );
+                target_transform.rotation = rotation_delta * target_transform.rotation;
+
                 target_transform.scale = DVec3::from(result_transform.scale).as_vec3();
             }
 
