@@ -1,4 +1,4 @@
-use bevy::bevy_image::BevyDefault;
+ 
 use  bevy_image::BevyDefault;
 use bevy_app::{App, Plugin};
 use bevy_asset::{load_internal_asset, Asset, AssetId, Handle};
@@ -193,6 +193,12 @@ impl<P: PhaseItem> RenderCommand<P> for DrawTransformGizmo {
         let Some(gizmo) = gizmos.into_inner().get(handle) else {
             return RenderCommandResult::Failure("No GizmoDrawDataHandle inner found");
         };
+
+       if gizmo.index_buffer.size() == 0 {
+        return RenderCommandResult::Failure("gizmo.index_buffer empty");
+       }
+
+       println!(" gizmo.index_buffer.size {}",  gizmo.index_buffer.size() );
 
         pass.set_index_buffer(gizmo.index_buffer.slice(..), 0, IndexFormat::Uint32);
         pass.set_vertex_buffer(0, gizmo.position_buffer.slice(..));
