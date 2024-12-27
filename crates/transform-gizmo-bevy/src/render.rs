@@ -199,7 +199,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawTransformGizmo {
         return RenderCommandResult::Failure("gizmo.index_buffer empty");
        }
 
-       println!(" gizmo.index_buffer.size {}",  gizmo.index_buffer.size() );
+      //  println!(" gizmo.index_buffer.size {}",  gizmo.index_buffer.size() );
 
         pass.set_index_buffer(gizmo.index_buffer.slice(..), 0, IndexFormat::Uint32);
         pass.set_vertex_buffer(0, gizmo.position_buffer.slice(..));

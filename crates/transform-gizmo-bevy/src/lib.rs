@@ -27,7 +27,7 @@
 //! You can configure the gizmo by modifying the [`GizmoOptions`] resource.
 //!
 //! You can either set it up with [`App::insert_resource`] when creating your App, or at any point in a system with [`ResMut<GizmoOptions>`].
-
+ 
 use bevy_app::prelude::*;
 use bevy_asset::{AssetApp, Assets};
 use bevy_ecs::prelude::*;
@@ -372,6 +372,8 @@ fn update_gizmos(
     mut last_cursor_pos: Local<Vec2>,
     mut last_scaled_cursor_pos: Local<Vec2>,
 ) {
+
+
     let Ok(window) = q_window.get_single() else {
         // No primary window found.
         return;
@@ -406,6 +408,8 @@ fn update_gizmos(
     let Some(viewport) = camera.logical_viewport_rect() else {
         return;
     };
+
+       
 
     // scale up the cursor pos from the custom viewport rect, if provided
     if let Some(custom_viewport) = gizmo_options.viewport_rect {
@@ -459,6 +463,7 @@ fn update_gizmos(
         drag_started: mouse.just_pressed(MouseButton::Left),
         dragging: mouse.any_pressed([MouseButton::Left]),
     };
+ 
 
     let mut target_entities: Vec<Entity> = vec![]; 
      let mut target_transforms: Vec<(Transform, Transform)> = vec![];
@@ -466,12 +471,16 @@ fn update_gizmos(
    
 
     for (entity, mut target_transform, target_global_transform, mut gizmo_target) in &mut q_targets {
-        let target_global_transform = target_global_transform.compute_transform();
+        
+
+        
+
+          let target_global_transform = target_global_transform.compute_transform();
 
 
 
         target_entities.push(entity);
-         target_transforms.push((*target_transform, target_global_transform));
+        target_transforms.push((*target_transform, target_global_transform));
 
         if gizmo_options.group_targets {
             gizmo_storage
@@ -479,6 +488,7 @@ fn update_gizmos(
                 .insert(entity, GIZMO_GROUP_UUID);
             continue;
         }
+ 
 
         let mut gizmo_uuid = *gizmo_storage
             .entity_gizmo_map
@@ -498,10 +508,9 @@ fn update_gizmos(
             gizmo_interaction,
             &[math::Transform {
                 
-                 translation: target_global_transform.translation.as_dvec3().into(),
+                translation: target_global_transform.translation.as_dvec3().into(),
                 rotation: target_global_transform.rotation.as_dquat().into(),
-
-
+ 
                 scale: target_transform.scale.as_dvec3().into(),
             }],
         );
@@ -519,14 +528,19 @@ fn update_gizmos(
 
             let to_local_rotation = target_transform.rotation * target_global_transform.rotation.inverse();
             let rotation_delta = ( to_local_rotation * DQuat::from(result_transform.rotation).as_quat() ) * ( to_local_rotation * target_global_transform.rotation ).inverse();
+            
+           
             target_transform.translation += to_local_rotation * ( DVec3::from(result_transform.translation).as_vec3() - target_global_transform.translation );
-            target_transform.rotation = rotation_delta * target_transform.rotation;
+              target_transform.rotation = ( rotation_delta * target_transform.rotation.normalize() ).normalize();
+
 
 
             target_transform.scale = DVec3::from(result_transform.scale).as_vec3();
         }
 
         gizmo_target.latest_result = gizmo_result.map(|(result, _)| result);
+
+       
     }
 
     if gizmo_options.group_targets {
@@ -551,6 +565,7 @@ fn update_gizmos(
          for (i, (_, mut target_transform, target_global_transform, mut gizmo_target)) in q_targets.iter_mut().enumerate() {
             let target_global_transform = target_global_transform.compute_transform();
 
+              
             gizmo_target.is_active = gizmo_result.is_some();
             gizmo_target.is_focused = is_focused;
 
@@ -559,11 +574,18 @@ fn update_gizmos(
                     bevy_log::warn!("No transform {i} found in GizmoResult!");
                     continue;
                 };
+ 
 
-                let to_local_rotation = target_transform.rotation * target_global_transform.rotation.inverse();
-                let rotation_delta = ( to_local_rotation * DQuat::from(result_transform.rotation).as_quat() ) * ( to_local_rotation * target_global_transform.rotation ).inverse();
+             let to_local_rotation = target_transform.rotation * target_global_transform.rotation.inverse();
+             let rotation_delta = ( to_local_rotation * DQuat::from(result_transform.rotation).as_quat() ) * ( to_local_rotation * target_global_transform.rotation ).inverse();
+               
+ 
                 target_transform.translation += to_local_rotation * ( DVec3::from(result_transform.translation).as_vec3() - target_global_transform.translation );
-                target_transform.rotation = rotation_delta * target_transform.rotation;
+                 
+                target_transform.rotation = ( rotation_delta * target_transform.rotation.normalize() ).normalize();
+               
+                target_transform.scale = DVec3::from(result_transform.scale).as_vec3();
+ 
 
                 target_transform.scale = DVec3::from(result_transform.scale).as_vec3();
             }
