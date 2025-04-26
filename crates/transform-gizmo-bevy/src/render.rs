@@ -35,7 +35,9 @@ use bevy_render::render_resource::{
 use bevy_render::renderer::RenderDevice;
 use bevy_render::view::{ExtractedView, RenderLayers, ViewTarget};
 use bevy_render::{Extract, Render, RenderApp, RenderSet};
-use bevy_utils::{HashMap, HashSet};
+
+use bevy::platform::collections::{hash_map::HashMap, hash_set::HashSet};
+
 use bytemuck::cast_slice;
 use uuid::Uuid;
 

@@ -35,7 +35,10 @@ use bevy_input::prelude::*;
 use bevy_math::{DQuat, DVec3, Vec2};
 use bevy_render::prelude::*;
 use bevy_transform::prelude::*;
-use bevy_utils::HashMap;
+
+
+use bevy::platform::collections::{hash_map::HashMap, hash_set::HashSet};
+
 use bevy_window::{PrimaryWindow, Window};
 use uuid::Uuid;
 
