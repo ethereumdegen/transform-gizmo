@@ -9,7 +9,10 @@ pub struct GuiPlugin;
 
 impl Plugin for GuiPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_plugins(EguiPlugin).add_systems(Update, update_ui);
+        app.add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: false  //? 
+
+        } ).add_systems(Update, update_ui);
     }
 }
 
@@ -72,7 +75,7 @@ fn draw_gizmo_result(ui: &mut egui::Ui, gizmo_result: Option<GizmoResult>) {
         };
 
         egui::Frame::none()
-            .outer_margin(egui::Margin::same(10.0))
+            .outer_margin(egui::Margin::same(10))
             .show(ui, |ui| {
                 ui.label(text);
             });

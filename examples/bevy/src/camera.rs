@@ -34,7 +34,7 @@ fn update_camera(
     input_mouse: Res<ButtonInput<MouseButton>>,
     mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>,
 ) {
-    let window = window_q.single();
+    let window = window_q.single().unwrap();
     // change input mapping for orbit and panning here
     let orbit_button = MouseButton::Right;
     let pan_button = MouseButton::Middle;
