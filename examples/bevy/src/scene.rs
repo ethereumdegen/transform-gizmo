@@ -53,6 +53,8 @@ fn setup_scene(
                         0.0,
                   ),
 
+                  PickingBehavior::default(), 
+
               
               /*  PickableBundle {
                     selection: PickSelection { is_selected: true },
