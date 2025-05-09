@@ -53,7 +53,7 @@ fn setup_scene(
                         0.0,
                   ),
 
-                  PickingBehavior::default(), 
+                  Pickable::default(), 
 
               
               /*  PickableBundle {

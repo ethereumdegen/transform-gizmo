@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*", "examples/*"]
 
 [workspace.package]
-version = "0.6.0"
+version = "0.6.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/urholaukkarinen/transform-gizmo"
@@ -11,8 +11,8 @@ repository = "https://github.com/urholaukkarinen/transform-gizmo"
 authors = ["Urho Laukkarinen <urho.laukkarinen@gmail.com>"]
 
 [workspace.dependencies]
-transform-gizmo = { version = "0.6.0", path = "crates/transform-gizmo" }
-transform-gizmo-bevy = { version = "0.6.0", path = "crates/transform-gizmo-bevy" }
+transform-gizmo = { version = "0.6.1", path = "crates/transform-gizmo" }
+transform-gizmo-bevy = { version = "0.6.1", path = "crates/transform-gizmo-bevy" }
 
 egui = "0.31.1"
 eframe = "0.29"
