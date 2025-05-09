@@ -356,13 +356,13 @@ fn queue_transform_gizmos(
     ) in &mut views
     {       
 
-          let retained_view_entity = RetainedViewEntity::new(view_entity.into(), None, 0); // is this ok ? 
+         let retained_view_entity =  & view.retained_view_entity ; 
 
-
-
-        let Some(transparent_phase) = transparent_render_phases.get_mut( &retained_view_entity ) else {
+        let Some(transparent_phase) = transparent_render_phases.get_mut( retained_view_entity ) else {
+           
             continue;
         };
+
 
         // entity_msaa > camera_msaa > default
         let msaa_sample_count = entity_msaa.map_or(
