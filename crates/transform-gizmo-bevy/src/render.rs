@@ -1,4 +1,6 @@
  
+use bevy::prelude::warn;
+use bevy_render::view::RetainedViewEntity;
 use  bevy_image::BevyDefault;
 use bevy_app::{App, Plugin};
 use bevy_asset::{load_internal_asset, Asset, AssetId, Handle};
@@ -35,7 +37,10 @@ use bevy_render::render_resource::{
 use bevy_render::renderer::RenderDevice;
 use bevy_render::view::{ExtractedView, RenderLayers, ViewTarget};
 use bevy_render::{Extract, Render, RenderApp, RenderSet};
-use bevy_utils::{HashMap, HashSet};
+
+use bevy::platform::collections::hash_map::HashMap;
+use bevy::platform::collections::hash_set::HashSet;
+
 use bytemuck::cast_slice;
 use uuid::Uuid;
 
@@ -139,6 +144,7 @@ impl RenderAsset for GizmoBuffers {
 
     fn prepare_asset(
         source_asset: Self::SourceAsset,
+        _asset_id: AssetId< GizmoDrawData >, 
         render_device: &mut SystemParamItem<Self::Param>,
     ) -> Result<Self, PrepareAssetError<Self::SourceAsset>> {
         let position_buffer_data = cast_slice(&source_asset.0.vertices);
@@ -342,7 +348,7 @@ fn queue_transform_gizmos(
     mut transparent_render_phases: ResMut<ViewSortedRenderPhases<Transparent3d>>,
 ) {
     let draw_function = draw_functions.read().get_id::<DrawGizmo>().unwrap();
-    let camera_msaa = msaa_q.get_single().ok().flatten();
+    let camera_msaa = msaa_q.single().ok().flatten();
     for (
         view_entity,
         view,
@@ -351,9 +357,16 @@ fn queue_transform_gizmos(
         (normal_prepass, depth_prepass, motion_vector_prepass, deferred_prepass),
     ) in &mut views
     {
-        let Some(transparent_phase) = transparent_render_phases.get_mut(&view_entity) else {
+ 
+         let retained_view_entity =  & view.retained_view_entity ; 
+
+        let Some(transparent_phase) = transparent_render_phases.get_mut( retained_view_entity ) else {
+           
             continue;
         };
+
+
+ 
 
         // entity_msaa > camera_msaa > default
         let msaa_sample_count = entity_msaa.map_or(
@@ -402,8 +415,8 @@ fn queue_transform_gizmos(
                 batch_range: 0..1,
                 extra_index: PhaseItemExtraIndex::None,
 
-
-                ..default()  //is this ok ?? indexed ? 
+                indexed: false, 
+                 //is this ok ?? indexed ? 
             });
         }
     }
