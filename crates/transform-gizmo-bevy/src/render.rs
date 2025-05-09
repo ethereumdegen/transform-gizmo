@@ -400,7 +400,10 @@ fn queue_transform_gizmos(
                 pipeline,
                 distance: 0.,
                 batch_range: 0..1,
-                extra_index: PhaseItemExtraIndex::NONE,
+                extra_index: PhaseItemExtraIndex::None,
+
+
+                ..default()  //is this ok ?? indexed ? 
             });
         }
     }
